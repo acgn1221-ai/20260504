@@ -64,12 +64,23 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
+    // --- 偵測嘴巴張開程度 ---
+    // 選擇上唇中央 (13) 和下唇中央 (14) 的關鍵點
+    let upperLip = face.keypoints[13];
+    let lowerLip = face.keypoints[14];
+    // 計算垂直距離作為嘴巴張開的程度
+    let mouthOpenDist = dist(upperLip.x, upperLip.y, lowerLip.x, lowerLip.y);
+    
+    // 定義嘴巴張開距離的範圍 (這些值可能需要根據實際情況調整)
+    let minMouthOpenDist = 5; // 嘴巴閉合時的最小距離
+    let maxMouthOpenDist = 30; // 嘴巴張開時的最大距離
+
     // --- 繪製面具底層 (填充色 + 臉部外輪廓) ---
     // 這些索引對應 MediaPipe FaceMesh 的臉部外輪廓
     let faceOutlineIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
     
     push();
-    fill(255, 255, 255, 150); // 半透明白色底色
+    fill(255, 255, 255); // 改為純白色底色
     stroke(255, 0, 0);         // 紅色邊框
     strokeWeight(2);
     beginShape();
@@ -91,6 +102,26 @@ function draw() {
       let sx = x + displayWidth - (p.x * (displayWidth / video.width));
       let sy = y + p.y * (displayHeight / video.height);
       ellipse(sx, sy, 20, 20); // 在關鍵點畫出裝飾圓點
+    }
+
+    // --- 繪製流淚效果 ---
+    // 根據嘴巴張開程度調整眼淚大小和透明度
+    let tearScale = map(mouthOpenDist, minMouthOpenDist, maxMouthOpenDist, 1, 2, true); // 嘴巴張開越大，眼淚越大 (1到2倍)
+    let tearAlpha = map(mouthOpenDist, minMouthOpenDist, maxMouthOpenDist, 100, 255, true); // 嘴巴張開越大，眼淚越不透明 (100到255)
+
+    let tearIndices = [101, 330]; // 左右眼下方的特徵點
+    fill(0, 150, 255, tearAlpha); // 水藍色，透明度動態調整
+    noStroke();
+    for (let index of tearIndices) {
+      let p = face.keypoints[index];
+      let sx = x + displayWidth - (p.x * (displayWidth / video.width));
+      let sy = y + p.y * (displayHeight / video.height);
+      
+      push();
+      translate(sx, sy + 10 * tearScale); // 根據縮放調整位置
+      ellipse(0, 15 * tearScale, 12 * tearScale, 20 * tearScale); // 水滴主體，大小動態調整
+      triangle(-6 * tearScale, 15 * tearScale, 6 * tearScale, 15 * tearScale, 0, -5 * tearScale); // 水滴尖端，大小動態調整
+      pop();
     }
 
     // 指定要串接的臉部特徵點索引 (嘴唇輪廓)
