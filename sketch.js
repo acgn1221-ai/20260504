@@ -85,5 +85,23 @@ function draw() {
 
       line(x1, y1, x2, y2);
     }
+
+    // --- 繪製新的特徵點連線 (細紅線) ---
+    let upperFaceIndices = [76, 77, 90, 180, 85, 16, 315, 404, 320, 307, 306, 408, 304, 303, 302, 11, 72, 73, 74, 184];
+    
+    strokeWeight(1); // 設定細線粗細為 1
+    
+    for (let i = 0; i < upperFaceIndices.length - 1; i++) {
+      let p1 = face.keypoints[upperFaceIndices[i]];
+      let p2 = face.keypoints[upperFaceIndices[i + 1]];
+
+      // 同樣計算對應到畫布中央影像的鏡像座標
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
   }
 }
