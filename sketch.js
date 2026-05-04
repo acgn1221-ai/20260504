@@ -64,25 +64,33 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
-    // --- 透過 line 指令繪製臉部外輪廓 ---
+    // --- 繪製面具底層 (填充色 + 臉部外輪廓) ---
     // 這些索引對應 MediaPipe FaceMesh 的臉部外輪廓
     let faceOutlineIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
     
-    stroke(255, 0, 0); // 設定線條顏色為紅色
-    strokeWeight(2);   // 設定輪廓線條粗細
-    noFill();
-
+    push();
+    fill(255, 255, 255, 150); // 半透明白色底色
+    stroke(255, 0, 0);         // 紅色邊框
+    strokeWeight(2);
+    beginShape();
     for (let i = 0; i < faceOutlineIndices.length; i++) {
-      let p1 = face.keypoints[faceOutlineIndices[i]];
-      // 使用模數運算讓最後一個點連回第一個點，形成閉合輪廓
-      let p2 = face.keypoints[faceOutlineIndices[(i + 1) % faceOutlineIndices.length]];
+      let p = face.keypoints[faceOutlineIndices[i]];
+      let sx = x + displayWidth - (p.x * (displayWidth / video.width));
+      let sy = y + p.y * (displayHeight / video.height);
+      vertex(sx, sy);
+    }
+    endShape(CLOSE);
+    pop();
 
-      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-      let y1 = y + p1.y * (displayHeight / video.height);
-      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-      let y2 = y + p2.y * (displayHeight / video.height);
-
-      line(x1, y1, x2, y2);
+    // --- 繪製額外的裝飾圖案 (例如額頭與兩頰的點) ---
+    let patternIndices = [10, 234, 454]; // 額頭中心、左頰、右頰
+    noStroke();
+    fill(255, 0, 0, 200); // 裝飾點使用半透明紅色
+    for (let index of patternIndices) {
+      let p = face.keypoints[index];
+      let sx = x + displayWidth - (p.x * (displayWidth / video.width));
+      let sy = y + p.y * (displayHeight / video.height);
+      ellipse(sx, sy, 20, 20); // 在關鍵點畫出裝飾圓點
     }
 
     // 指定要串接的臉部特徵點索引 (嘴唇輪廓)
@@ -125,16 +133,60 @@ function draw() {
       line(x1, y1, x2, y2);
     }
 
-    // --- 繪製右眼外圈 (對應使用者提供的左眼內圈) ---
-    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到右眼的外輪廓
+    // --- 繪製左眼 (畫面右側) ---
+    // 1. 計算左眼張合距離 (使用關鍵點 159 與 145)
+    let leftE1 = face.keypoints[159];
+    let leftE2 = face.keypoints[145];
+    let leftEyeDist = dist(leftE1.x, leftE1.y, leftE2.x, leftE2.y);
+    
+    // 2. 將距離映射到粗細 (距離愈小/閉眼，線條愈粗；距離愈大/睜眼，線條愈細)
+    // 這裡設定：距離 2 像素時粗細為 10，距離 15 像素時粗細為 1
+    let leftWeight = map(leftEyeDist, 2, 15, 10, 1, true);
+
+    let leftEyeOuter = [130, 25, 110, 24, 23, 22, 26, 112, 243, 190, 56, 28, 27, 29, 30, 247, 130];
+    let leftEyeInner = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
+
+    stroke(255, 0, 0);
+    strokeWeight(leftWeight); // 套用動態粗細
+
+    // 畫左眼外圈
+    for (let i = 0; i < leftEyeOuter.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeOuter[i]];
+      let p2 = face.keypoints[leftEyeOuter[i + 1]];
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+      line(x1, y1, x2, y2);
+    }
+    // 畫左眼內圈
+    for (let i = 0; i < leftEyeInner.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeInner[i]];
+      let p2 = face.keypoints[leftEyeInner[i + 1]];
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製右眼 (畫面左側) ---
+    // 1. 計算右眼張合距離 (使用關鍵點 386 與 374)
+    let rightE1 = face.keypoints[386];
+    let rightE2 = face.keypoints[374];
+    let rightEyeDist = dist(rightE1.x, rightE1.y, rightE2.x, rightE2.y);
+    
+    // 2. 映射右眼粗細
+    let rightWeight = map(rightEyeDist, 2, 15, 10, 1, true);
+
     let rightEyeOuter = [
       263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466, 263
     ];
-    
-    stroke(255, 0, 0); // 設定線條顏色為紅色
-    strokeWeight(2);   // 設定粗細為 2
-    strokeJoin(ROUND);
-    noFill();
+    let rightEyeInner = [
+      359, 467, 257, 256, 255, 254, 286, 414, 463, 341, 253, 252, 253, 254, 339, 253, 359
+    ];
+
+    strokeWeight(rightWeight); // 套用動態粗細
 
     for (let i = 0; i < rightEyeOuter.length - 1; i++) {
       let p1 = face.keypoints[rightEyeOuter[i]];
@@ -148,12 +200,6 @@ function draw() {
       line(x1, y1, x2, y2);
     }
 
-    // --- 繪製右眼內圈 (對應使用者提供的左眼外圈) ---
-    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到右眼的內輪廓
-    let rightEyeInner = [
-      359, 467, 257, 256, 255, 254, 286, 414, 463, 341, 253, 252, 253, 254, 339, 253, 359
-    ];
-    
     for (let i = 0; i < rightEyeInner.length - 1; i++) {
       let p1 = face.keypoints[rightEyeInner[i]];
       let p2 = face.keypoints[rightEyeInner[i + 1]];
