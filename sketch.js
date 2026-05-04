@@ -120,5 +120,113 @@ function draw() {
 
       line(x1, y1, x2, y2);
     }
+
+    // --- 繪製左眼外圈 (包含編號 247) ---
+    let leftEyeOuter = [130, 247, 30, 29, 27, 28, 56, 190, 243, 112, 26, 22, 23, 24, 110, 25, 130];
+    stroke(255, 0, 0); 
+    strokeWeight(2);
+    for (let i = 0; i < leftEyeOuter.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeOuter[i]];
+      let p2 = face.keypoints[leftEyeOuter[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製左眼內圈 (包含編號 246) ---
+    let leftEyeInner = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7, 33];
+    for (let i = 0; i < leftEyeInner.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeInner[i]];
+      let p2 = face.keypoints[leftEyeInner[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製左眼外圈 (包含編號 247) ---
+    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到左眼的外輪廓
+    let leftEyeOuter = [130, 25, 110, 24, 23, 22, 26, 112, 243, 190, 56, 28, 27, 29, 30, 247, 130];
+    
+    stroke(255, 0, 0); // 設定線條顏色為紅色
+    strokeWeight(2);   // 設定粗細為 2
+    strokeJoin(ROUND);
+    noFill();
+
+    for (let i = 0; i < leftEyeOuter.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeOuter[i]];
+      let p2 = face.keypoints[leftEyeOuter[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製左眼內圈 (包含編號 246) ---
+    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到左眼的內輪廓
+    let leftEyeInner = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
+    
+    for (let i = 0; i < leftEyeInner.length - 1; i++) {
+      let p1 = face.keypoints[leftEyeInner[i]];
+      let p2 = face.keypoints[leftEyeInner[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製右眼外圈 (對應使用者提供的左眼內圈) ---
+    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到右眼的外輪廓
+    let rightEyeOuter = [
+      263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466, 263
+    ];
+    
+    stroke(255, 0, 0); // 設定線條顏色為紅色
+    strokeWeight(2);   // 設定粗細為 2
+    strokeJoin(ROUND);
+    noFill();
+
+    for (let i = 0; i < rightEyeOuter.length - 1; i++) {
+      let p1 = face.keypoints[rightEyeOuter[i]];
+      let p2 = face.keypoints[rightEyeOuter[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
+
+    // --- 繪製右眼內圈 (對應使用者提供的左眼外圈) ---
+    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到右眼的內輪廓
+    let rightEyeInner = [
+      359, 467, 257, 256, 255, 254, 286, 414, 463, 341, 253, 252, 253, 254, 339, 253, 359
+    ];
+    
+    for (let i = 0; i < rightEyeInner.length - 1; i++) {
+      let p1 = face.keypoints[rightEyeInner[i]];
+      let p2 = face.keypoints[rightEyeInner[i + 1]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
+    }
   }
 }
