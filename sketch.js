@@ -64,19 +64,26 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
-    // 在偵測到的臉部上繪製關鍵點
-    for (let i = 0; i < face.keypoints.length; i++) {
-      let keypoint = face.keypoints[i];
-      // ml5.js 返回的座標是基於原始未翻轉的影像。
-      // 為了在翻轉後的影像上正確繪製，我們需要將 x 座標進行反向映射。
-      // 原始影像的 x 座標 (0 到 video.width) 映射到顯示區域的 (x 到 x+displayWidth)。
-      // 由於顯示區域是翻轉的，所以 keypoint.x = 0 應該在顯示區域的右側，keypoint.x = video.width 應該在左側。
-      let scaledX = x + displayWidth - (keypoint.x * (displayWidth / video.width));
-      let scaledY = y + keypoint.y * (displayHeight / video.height);
+    // 指定要串接的臉部特徵點索引 (嘴唇輪廓)
+    let lipIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291];
 
-      stroke(255, 255, 0); // 黃色
-      strokeWeight(2);
-      point(scaledX, scaledY);
+    stroke(255, 0, 0); // 設定線條顏色為紅色
+    strokeWeight(15);  // 設定粗細為 15
+    strokeJoin(ROUND); // 讓線條轉折處較平滑
+    noFill();
+
+    // 使用 line 指令串接指定的特徵點
+    for (let i = 0; i < lipIndices.length - 1; i++) {
+      let p1 = face.keypoints[lipIndices[i]];
+      let p2 = face.keypoints[lipIndices[i + 1]];
+
+      // 計算對應到畫布中央 50% 影像且左右顛倒的座標
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
     }
   }
 }
