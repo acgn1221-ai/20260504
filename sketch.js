@@ -64,6 +64,23 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
+    // --- 繪製臉部底層面具 (依照臉型外框) ---
+    // 這些索引對應 MediaPipe FaceMesh 的臉部外輪廓
+    let faceOutlineIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+    
+    push();
+    fill(255, 255, 255, 120); // 設定面具為半透明白色
+    noStroke();
+    beginShape();
+    for (let i = 0; i < faceOutlineIndices.length; i++) {
+      let p = face.keypoints[faceOutlineIndices[i]];
+      let sx = x + displayWidth - (p.x * (displayWidth / video.width));
+      let sy = y + p.y * (displayHeight / video.height);
+      vertex(sx, sy);
+    }
+    endShape(CLOSE);
+    pop();
+
     // 指定要串接的臉部特徵點索引 (嘴唇輪廓)
     let lipIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291];
 
