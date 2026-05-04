@@ -1,0 +1,11 @@
+/* 確保 body 沒有邊距且不出現捲軸 */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #e7c6ff;
+}
+
+canvas {
+  display: block;
+}
