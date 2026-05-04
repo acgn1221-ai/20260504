@@ -64,22 +64,26 @@ function draw() {
   if (faces.length > 0) {
     let face = faces[0];
 
-    // --- 繪製臉部底層面具 (依照臉型外框) ---
+    // --- 透過 line 指令繪製臉部外輪廓 ---
     // 這些索引對應 MediaPipe FaceMesh 的臉部外輪廓
     let faceOutlineIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
     
-    push();
-    fill(255, 255, 255, 120); // 設定面具為半透明白色
-    noStroke();
-    beginShape();
+    stroke(255, 0, 0); // 設定線條顏色為紅色
+    strokeWeight(2);   // 設定輪廓線條粗細
+    noFill();
+
     for (let i = 0; i < faceOutlineIndices.length; i++) {
-      let p = face.keypoints[faceOutlineIndices[i]];
-      let sx = x + displayWidth - (p.x * (displayWidth / video.width));
-      let sy = y + p.y * (displayHeight / video.height);
-      vertex(sx, sy);
+      let p1 = face.keypoints[faceOutlineIndices[i]];
+      // 使用模數運算讓最後一個點連回第一個點，形成閉合輪廓
+      let p2 = face.keypoints[faceOutlineIndices[(i + 1) % faceOutlineIndices.length]];
+
+      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
+      let y1 = y + p1.y * (displayHeight / video.height);
+      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
+      let y2 = y + p2.y * (displayHeight / video.height);
+
+      line(x1, y1, x2, y2);
     }
-    endShape(CLOSE);
-    pop();
 
     // 指定要串接的臉部特徵點索引 (嘴唇輪廓)
     let lipIndices = [409, 270, 269, 267, 0, 37, 39, 40, 185, 61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291];
@@ -113,73 +117,6 @@ function draw() {
       let p2 = face.keypoints[upperFaceIndices[i + 1]];
 
       // 同樣計算對應到畫布中央影像的鏡像座標
-      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-      let y1 = y + p1.y * (displayHeight / video.height);
-      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-      let y2 = y + p2.y * (displayHeight / video.height);
-
-      line(x1, y1, x2, y2);
-    }
-
-    // --- 繪製左眼外圈 (包含編號 247) ---
-    let leftEyeOuter = [130, 247, 30, 29, 27, 28, 56, 190, 243, 112, 26, 22, 23, 24, 110, 25, 130];
-    stroke(255, 0, 0); 
-    strokeWeight(2);
-    for (let i = 0; i < leftEyeOuter.length - 1; i++) {
-      let p1 = face.keypoints[leftEyeOuter[i]];
-      let p2 = face.keypoints[leftEyeOuter[i + 1]];
-
-      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-      let y1 = y + p1.y * (displayHeight / video.height);
-      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-      let y2 = y + p2.y * (displayHeight / video.height);
-
-      line(x1, y1, x2, y2);
-    }
-
-    // --- 繪製左眼內圈 (包含編號 246) ---
-    let leftEyeInner = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7, 33];
-    for (let i = 0; i < leftEyeInner.length - 1; i++) {
-      let p1 = face.keypoints[leftEyeInner[i]];
-      let p2 = face.keypoints[leftEyeInner[i + 1]];
-
-      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-      let y1 = y + p1.y * (displayHeight / video.height);
-      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-      let y2 = y + p2.y * (displayHeight / video.height);
-
-      line(x1, y1, x2, y2);
-    }
-
-    // --- 繪製左眼外圈 (包含編號 247) ---
-    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到左眼的外輪廓
-    let leftEyeOuter = [130, 25, 110, 24, 23, 22, 26, 112, 243, 190, 56, 28, 27, 29, 30, 247, 130];
-    
-    stroke(255, 0, 0); // 設定線條顏色為紅色
-    strokeWeight(2);   // 設定粗細為 2
-    strokeJoin(ROUND);
-    noFill();
-
-    for (let i = 0; i < leftEyeOuter.length - 1; i++) {
-      let p1 = face.keypoints[leftEyeOuter[i]];
-      let p2 = face.keypoints[leftEyeOuter[i + 1]];
-
-      let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-      let y1 = y + p1.y * (displayHeight / video.height);
-      let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-      let y2 = y + p2.y * (displayHeight / video.height);
-
-      line(x1, y1, x2, y2);
-    }
-
-    // --- 繪製左眼內圈 (包含編號 246) ---
-    // 這些點位是根據 MediaPipe Face Mesh 的標準點位，對應到左眼的內輪廓
-    let leftEyeInner = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
-    
-    for (let i = 0; i < leftEyeInner.length - 1; i++) {
-      let p1 = face.keypoints[leftEyeInner[i]];
-      let p2 = face.keypoints[leftEyeInner[i + 1]];
-
       let x1 = x + displayWidth - (p1.x * (displayWidth / video.width));
       let y1 = y + p1.y * (displayHeight / video.height);
       let x2 = x + displayWidth - (p2.x * (displayWidth / video.width));
