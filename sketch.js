@@ -60,6 +60,13 @@ function draw() {
   image(video, 0, 0, displayWidth, displayHeight);
   pop();
 
+  // 在畫布左上角顯示文字
+  push();
+  fill(255); // 白色文字
+  textSize(24);
+  text("414730506 張怡婕", 20, 40); // 放置在左上角 (20, 40) 座標
+  pop();
+
   // 確保至少偵測到一張臉
   if (faces.length > 0) {
     let face = faces[0];
@@ -189,6 +196,7 @@ function draw() {
     let leftEyeOuter = [130, 25, 110, 24, 23, 22, 26, 112, 243, 190, 56, 28, 27, 29, 30, 247, 130];
     let leftEyeInner = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
 
+    push(); // 隔離左眼樣式設定
     stroke(0, 0, 255); // 藍色
     strokeWeight(leftWeight); // 套用動態粗細
 
@@ -212,6 +220,7 @@ function draw() {
       let y2 = y + p2.y * (displayHeight / video.height);
       line(x1, y1, x2, y2);
     }
+    pop(); // 恢復樣式設定
 
     // --- 繪製右眼 (畫面左側) ---
     // 1. 計算右眼張合距離 (使用關鍵點 386 與 374)
@@ -229,7 +238,7 @@ function draw() {
       359, 467, 257, 256, 255, 254, 286, 414, 463, 341, 253, 252, 253, 254, 339, 253, 359
     ];
 
-    stroke(255, 255, 0); // 黃色
+    push(); // 隔離右眼樣式設定
 
     for (let i = 0; i < rightEyeOuter.length - 1; i++) {
       let p1 = face.keypoints[rightEyeOuter[i]];
