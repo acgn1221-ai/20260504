@@ -60,11 +60,12 @@ function draw() {
   image(video, 0, 0, displayWidth, displayHeight);
   pop();
 
-  // 在畫布左上角顯示文字
+  // 在影像上方顯示文字 (置中且改為紅色以利辨識)
   push();
-  fill(255); // 白色文字
+  fill(255, 0, 0); // 改用紅色
   textSize(24);
-  text("414730506 張怡婕", 20, 40); // 放置在左上角 (20, 40) 座標
+  textAlign(CENTER, BOTTOM);
+  text("414730506 張怡婕", windowWidth / 2, y - 10); 
   pop();
 
   // 確保至少偵測到一張臉
@@ -72,7 +73,7 @@ function draw() {
     let face = faces[0];
 
     // --- 繪製彩色的爆炸頭效果 ---
-    drawExplosionEffect(face, x, y, displayWidth, displayHeight);
+    drawClownHair(face, x, y, displayWidth, displayHeight);
 
     // --- 偵測嘴巴張開程度 ---
     // 選擇上唇中央 (13) 和下唇中央 (14) 的關鍵點
@@ -197,7 +198,7 @@ function draw() {
     let leftEyeInner = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33];
 
     push(); // 隔離左眼樣式設定
-    stroke(0, 0, 255); // 藍色
+    stroke(0, 0, 255); // 螢幕左眼（使用者右眼）設定為藍色
     strokeWeight(leftWeight); // 套用動態粗細
 
     // 畫左眼外圈
@@ -239,6 +240,8 @@ function draw() {
     ];
 
     push(); // 隔離右眼樣式設定
+    stroke(255, 255, 0); // 螢幕右眼（使用者左眼）設定為黃色
+    strokeWeight(rightWeight);
 
     for (let i = 0; i < rightEyeOuter.length - 1; i++) {
       let p1 = face.keypoints[rightEyeOuter[i]];
@@ -282,73 +285,45 @@ function drawStar(x, y, radius1, radius2, npoints) {
   endShape(CLOSE);
 }
 
-// 繪製爆炸頭效果的輔助函式
-function drawExplosionEffect(face, x, y, displayWidth, displayHeight) {
+// 繪製彩色泡泡小丑頭髮
+function drawClownHair(face, x, y, displayWidth, displayHeight) {
   push();
-  colorMode(HSB, 360, 100, 100, 1); // 使用HSB顏色模式
   noStroke();
-
-  let hueOffset = frameCount * 5 % 360; // 讓顏色隨時間變化
-
+  colorMode(HSB, 360, 100, 100, 1);
+  
   let faceOutlineIndices = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
 
-  // 計算臉部輪廓的中心點 (用於確定向外延伸的方向)
-  let centroidX = 0;
-  let centroidY = 0;
+  // 取得中心點
+  let nose = face.keypoints[4];
+  let cx = x + displayWidth - (nose.x * (displayWidth / video.width));
+  let cy = y + nose.y * (displayHeight / video.height);
+
+  let hueBase = frameCount % 360;
+
   for (let i = 0; i < faceOutlineIndices.length; i++) {
     let p = face.keypoints[faceOutlineIndices[i]];
-    centroidX += p.x;
-    centroidY += p.y;
-  }
-  centroidX /= faceOutlineIndices.length;
-  centroidY /= faceOutlineIndices.length;
-
-  // 將中心點轉換到畫布的鏡像座標
-  let scaledCentroidX = x + displayWidth - (centroidX * (displayWidth / video.width));
-  let scaledCentroidY = y + centroidY * (displayHeight / video.height);
-
-  for (let i = 0; i < faceOutlineIndices.length; i++) {
-    let p1 = face.keypoints[faceOutlineIndices[i]];
-    let p2 = face.keypoints[faceOutlineIndices[(i + 1) % faceOutlineIndices.length]]; // 確保最後一個點連回第一個
-
-    // 將特徵點轉換到畫布的鏡像座標
-    let sx1 = x + displayWidth - (p1.x * (displayWidth / video.width));
-    let sy1 = y + p1.y * (displayHeight / video.height);
-    let sx2 = x + displayWidth - (p2.x * (displayWidth / video.width));
-    let sy2 = y + p2.y * (displayHeight / video.height);
-
-    // 臉部輪廓線段的中點
-    let midX = (sx1 + sx2) / 2;
-    let midY = (sy1 + sy2) / 2;
-
-    // 從臉部中心到線段中點的向量，用於確定向外延伸的方向
-    let vecX = midX - scaledCentroidX;
-    let vecY = midY - scaledCentroidY;
-    let len = dist(0, 0, vecX, vecY);
-
-    // 歸一化向量，並加入一些隨機性
-    if (len > 0) {
-      vecX /= len;
-      vecY /= len;
-    } else { // 如果點在中心，給一個預設方向
-      vecX = 0;
-      vecY = -1;
+    let sx = x + displayWidth - (p.x * (displayWidth / video.width));
+    let sy = y + p.y * (displayHeight / video.height);
+    
+    // 頭髮延伸的方向
+    let dx = sx - cx;
+    let dy = sy - cy;
+    let mag = sqrt(dx*dx + dy*dy);
+    
+    // 只在臉的上半部與側面加頭髮
+    if (sy < cy + 20) {
+      let angle = (hueBase + i * 10) % 360;
+      fill(angle, 80, 100, 0.8);
+      
+      // 頭髮泡泡的位置與隨機抖動
+      let offset = 20 + noise(i, frameCount * 0.1) * 30;
+      let hx = sx + (dx / mag) * offset;
+      let hy = sy + (dy / mag) * offset;
+      
+      // 繪製彩色泡泡
+      let r = 25 + sin(frameCount * 0.2 + i) * 10;
+      ellipse(hx, hy, r, r);
     }
-
-    let explosionLength = map(noise(i * 0.1, frameCount * 0.05), 0, 1, 30, 60); // 爆炸尖刺的長度 (30到60像素)
-    let apexX = midX + vecX * explosionLength;
-    let apexY = midY + vecY * explosionLength;
-
-    // 顏色變化：根據時間和點的索引來循環色相
-    let currentHue = (hueOffset + i * 5) % 360;
-    fill(currentHue, 90, 95, 0.7); // 高飽和度、高亮度、半透明
-
-    // 繪製三角形作為爆炸尖刺
-    beginShape();
-    vertex(sx1, sy1);
-    vertex(sx2, sy2);
-    vertex(apexX, apexY);
-    endShape(CLOSE);
   }
   pop();
 }
